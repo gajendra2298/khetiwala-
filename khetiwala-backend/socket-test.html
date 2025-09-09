@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khetiwala Socket.IO Test</title>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #f9f9f9;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .message.sent {
+            background-color: #e3f2fd;
+            text-align: right;
+        }
+        .message.received {
+            background-color: #f3e5f5;
+        }
+        .message.system {
+            background-color: #fff3e0;
+            font-style: italic;
+        }
+        .notification {
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 10px;
+            margin: 5px 0;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        .status.connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Khetiwala Socket.IO Test Client</h1>
+    
+    <div class="container">
+        <h3>Connection Status</h3>
+        <div id="status" class="status disconnected">Disconnected</div>
+        <div>
+            <input type="text" id="token" placeholder="JWT Token" style="width: 300px;">
+            <button onclick="connect()">Connect</button>
+            <button onclick="disconnect()">Disconnect</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>Chat</h3>
+        <div>
+            <input type="text" id="recipientId" placeholder="Recipient User ID">
+            <input type="text" id="messageInput" placeholder="Type your message..." style="width: 300px;">
+            <button onclick="sendMessage()">Send Message</button>
+        </div>
+        <div>
+            <button onclick="getConversations()">Get Conversations</button>
+            <button onclick="getOnlineUsers()">Get Online Users</button>
+        </div>
+        <div id="messages" class="messages"></div>
+    </div>
+
+    <div class="container">
+        <h3>Notifications</h3>
+        <div id="notifications"></div>
+    </div>
+
+    <div class="container">
+        <h3>Typing Indicator</h3>
+        <div>
+            <input type="text" id="typingRecipient" placeholder="Recipient User ID">
+            <button onclick="startTyping()">Start Typing</button>
+            <button onclick="stopTyping()">Stop Typing</button>
+        </div>
+        <div id="typingIndicator"></div>
+    </div>
+
+    <script>
+        let socket = null;
+        let isTyping = false;
+
+        function connect() {
+            const token = document.getElementById('token').value;
+            if (!token) {
+                alert('Please enter a JWT token');
+                return;
+            }
+
+            socket = io('http://localhost:3000', {
+                auth: {
+                    token: token
+                }
+            });
+
+            socket.on('connect', () => {
+                updateStatus('Connected', 'connected');
+                addMessage('Connected to server', 'system');
+            });
+
+            socket.on('disconnect', () => {
+                updateStatus('Disconnected', 'disconnected');
+                addMessage('Disconnected from server', 'system');
+            });
+
+            socket.on('connected', (data) => {
+                addMessage(`Connected as: ${data.user.name} (${data.user.email})`, 'system');
+            });
+
+            socket.on('receiveMessage', (message) => {
+                addMessage(`From ${message.sender?.name || 'Unknown'}: ${message.text}`, 'received');
+            });
+
+            socket.on('messageSent', (message) => {
+                addMessage(`To ${message.receiver?.name || 'Unknown'}: ${message.text}`, 'sent');
+            });
+
+            socket.on('notification', (notification) => {
+                addNotification(notification);
+            });
+
+            socket.on('typing', (data) => {
+                if (data.isTyping) {
+                    document.getElementById('typingIndicator').innerHTML = 
+                        `<div class="message system">${data.senderId} is typing...</div>`;
+                } else {
+                    document.getElementById('typingIndicator').innerHTML = '';
+                }
+            });
+
+            socket.on('stopTyping', (data) => {
+                document.getElementById('typingIndicator').innerHTML = '';
+            });
+
+            socket.on('userOnline', (data) => {
+                addMessage(`User ${data.user.name} came online`, 'system');
+            });
+
+            socket.on('userOffline', (data) => {
+                addMessage(`User ${data.userId} went offline`, 'system');
+            });
+
+            socket.on('onlineUsers', (userIds) => {
+                addMessage(`Online users: ${userIds.join(', ')}`, 'system');
+            });
+
+            socket.on('conversation', (messages) => {
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML = '';
+                messages.forEach(msg => {
+                    addMessage(`${msg.sender?.name || 'Unknown'}: ${msg.text}`, 'received');
+                });
+            });
+
+            socket.on('error', (error) => {
+                addMessage(`Error: ${error.message}`, 'system');
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+        }
+
+        function sendMessage() {
+            if (!socket) {
+                alert('Not connected');
+                return;
+            }
+
+            const recipientId = document.getElementById('recipientId').value;
+            const message = document.getElementById('messageInput').value;
+
+            if (!recipientId || !message) {
+                alert('Please enter recipient ID and message');
+                return;
+            }
+
+            socket.emit('sendMessage', {
+                recipientId: recipientId,
+                content: message,
+                messageType: 'text',
+                chatType: 'user_to_user'
+            });
+
+            document.getElementById('messageInput').value = '';
+        }
+
+        function getConversations() {
+            if (!socket) {
+                alert('Not connected');
+                return;
+            }
+
+            // This would typically be called via REST API
+            addMessage('Getting conversations...', 'system');
+        }
+
+        function getOnlineUsers() {
+            if (!socket) {
+                alert('Not connected');
+                return;
+            }
+
+            socket.emit('getOnlineUsers');
+        }
+
+        function startTyping() {
+            if (!socket) {
+                alert('Not connected');
+                return;
+            }
+
+            const recipientId = document.getElementById('typingRecipient').value;
+            if (!recipientId) {
+                alert('Please enter recipient ID');
+                return;
+            }
+
+            socket.emit('typing', {
+                recipientId: recipientId,
+                isTyping: true
+            });
+            isTyping = true;
+        }
+
+        function stopTyping() {
+            if (!socket || !isTyping) {
+                return;
+            }
+
+            const recipientId = document.getElementById('typingRecipient').value;
+            if (!recipientId) {
+                return;
+            }
+
+            socket.emit('typing', {
+                recipientId: recipientId,
+                isTyping: false
+            });
+            isTyping = false;
+        }
+
+        function updateStatus(text, className) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = text;
+            statusDiv.className = `status ${className}`;
+        }
+
+        function addMessage(text, type) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = text;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addNotification(notification) {
+            const notificationsDiv = document.getElementById('notifications');
+            const notificationDiv = document.createElement('div');
+            notificationDiv.className = 'notification';
+            notificationDiv.innerHTML = `
+                <strong>${notification.title}</strong><br>
+                ${notification.message}<br>
+                <small>Type: ${notification.type} | Priority: ${notification.priority}</small>
+            `;
+            notificationsDiv.appendChild(notificationDiv);
+        }
+
+        // Auto-stop typing after 3 seconds
+        setInterval(() => {
+            if (isTyping) {
+                stopTyping();
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+### Test Khetiwala Backend API
+
+### 1. Health Check
+GET http://localhost:5000
+
+### 2. User Signup
+POST http://localhost:5000/auth/signup
+Content-Type: application/json
+
+{
+  "name": "John Farmer",
+  "email": "john@example.com",
+  "password": "password123",
+  "role": "farmer"
+}
+
+### 3. User Login
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+
+### 4. Get User Profile (Replace TOKEN with actual JWT token)
+GET http://localhost:5000/users/profile
+Authorization: Bearer TOKEN
+
+### 5. Create Product (Replace TOKEN with actual JWT token)
+POST http://localhost:5000/products
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
+{
+  "title": "Organic Tomatoes",
+  "description": "Fresh organic tomatoes from local farm",
+  "price": 150,
+  "image": "https://example.com/tomatoes.jpg"
+}
+
+### 6. Get All Products
+GET http://localhost:5000/products
+
+### 7. Create Order (Replace TOKEN with actual JWT token)
+POST http://localhost:5000/orders
+Authorization: Bearer TOKEN
+Content-Type: application/json
+
+{
+  "products": [
+    {
+      "product": "PRODUCT_ID_HERE",
+      "quantity": 2
+    }
+  ]
+}
+
+### 8. Get My Orders (Replace TOKEN with actual JWT token)
+GET http://localhost:5000/orders/my-orders
+Authorization: Bearer TOKEN
