@@ -3,14 +3,21 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
+
+  // Serve static files from uploads directory
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   // Security middleware
   app.use(helmet());
@@ -32,6 +39,9 @@ async function bootstrap() {
 
   // Global response interceptor
   app.useGlobalInterceptors(new ResponseInterceptor());
+
+  // Set global prefix for all routes
+  app.setGlobalPrefix('api');
 
   // CORS configuration
   app.enableCors({
@@ -68,7 +78,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document, {
+  SwaggerModule.setup('docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true,
     },
@@ -78,6 +88,6 @@ async function bootstrap() {
   await app.listen(port);
   
   logger.log(`🚀 Khetiwala Backend is running on: http://localhost:${port}`);
-  logger.log(`📚 API Documentation available at: http://localhost:${port}/api/docs`);
+  logger.log(`📚 API Documentation available at: http://localhost:${port}/docs`);
 }
 bootstrap();

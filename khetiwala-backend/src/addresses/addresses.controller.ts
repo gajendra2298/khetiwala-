@@ -78,8 +78,15 @@ export class AddressesController {
     @Param('id') id: string,
     @Body() updateAddressDto: UpdateAddressDto,
   ): Promise<AddressResponseDto> {
-    const address = await this.addressesService.updateAddress(id, req.user.sub, updateAddressDto);
-    return address as any;
+    console.log('AddressesController.updateAddress: Received request to update address:', id, 'for user:', req.user.sub);
+    try {
+      const address = await this.addressesService.updateAddress(id, req.user.sub, updateAddressDto);
+      console.log('AddressesController.updateAddress: Address updated successfully');
+      return address as any;
+    } catch (error) {
+      console.error('AddressesController.updateAddress: Error:', error);
+      throw error;
+    }
   }
 
   @Delete(':id')
@@ -90,7 +97,14 @@ export class AddressesController {
   @ApiResponse({ status: 404, description: 'Address not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async deleteAddress(@Request() req: any, @Param('id') id: string): Promise<void> {
-    await this.addressesService.deleteAddress(id, req.user.sub);
+    console.log('AddressesController.deleteAddress: Received request to delete address:', id, 'for user:', req.user.sub);
+    try {
+      await this.addressesService.deleteAddress(id, req.user.sub);
+      console.log('AddressesController.deleteAddress: Address deleted successfully');
+    } catch (error) {
+      console.error('AddressesController.deleteAddress: Error:', error);
+      throw error;
+    }
   }
 
   @Patch(':id/set-active')

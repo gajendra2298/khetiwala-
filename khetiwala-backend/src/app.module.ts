@@ -14,6 +14,7 @@ import { AddressesModule } from './addresses/addresses.module';
 import { CartModule } from './cart/cart.module';
 import { RentalRequestsModule } from './rental-requests/rental-requests.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     CartModule,
     RentalRequestsModule,
     NotificationsModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

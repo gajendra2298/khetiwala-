@@ -30,10 +30,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    const expiresIn = this.configService.get<string>('jwt.expiresIn') || '7d';
     const payload = { email: user.email, sub: user._id, role: user.role };
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('jwt.secret'),
-      expiresIn: this.configService.get<string>('jwt.expiresIn'),
+      expiresIn,
     });
 
     console.log('Login successful for user:', user.email);
@@ -47,6 +48,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
       },
+      expiresIn: this.parseExpiresIn(expiresIn),
     };
   }
 
@@ -60,10 +62,11 @@ export class AuthService {
     const user = await this.usersService.createUser(signupDto);
     const { password, ...result } = (user as UserDocument).toJSON();
     
+    const expiresIn = this.configService.get<string>('jwt.expiresIn') || '7d';
     const payload = { email: user.email, sub: (user as UserDocument)._id, role: user.role };
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('jwt.secret'),
-      expiresIn: this.configService.get<string>('jwt.expiresIn'),
+      expiresIn,
     });
 
     console.log('Signup successful for user:', user.email);
@@ -77,6 +80,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
       },
+      expiresIn: this.parseExpiresIn(expiresIn),
     };
   }
 
@@ -93,5 +97,33 @@ export class AuthService {
     });
 
     return { access_token: accessToken };
+  }
+
+  /**
+   * Parse JWT expiresIn string to seconds
+   * @param expiresIn - JWT expiresIn string (e.g., '7d', '1h', '3600s')
+   * @returns number of seconds
+   */
+  private parseExpiresIn(expiresIn: string): number {
+    const match = expiresIn.match(/^(\d+)([smhd])$/);
+    if (!match) {
+      return 3600; // Default to 1 hour if parsing fails
+    }
+
+    const value = parseInt(match[1], 10);
+    const unit = match[2];
+
+    switch (unit) {
+      case 's':
+        return value;
+      case 'm':
+        return value * 60;
+      case 'h':
+        return value * 60 * 60;
+      case 'd':
+        return value * 24 * 60 * 60;
+      default:
+        return 3600; // Default to 1 hour
+    }
   }
 }

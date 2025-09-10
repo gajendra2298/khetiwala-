@@ -11,6 +11,7 @@ import {
   IsEnum, 
   IsBoolean, 
   IsArray,
+  ArrayMaxSize,
   Length,
   Matches,
   IsMongoId
@@ -70,7 +71,7 @@ export class CreateProductDto {
   })
   @IsString({ message: 'Image must be a string' })
   @IsNotEmpty({ message: 'Image URL is required' })
-  @IsUrl({}, { message: 'Please provide a valid image URL' })
+  @Matches(/^https?:\/\/.+/, { message: 'Please provide a valid image URL starting with http:// or https://' })
   image: string;
 
   @ApiPropertyOptional({
@@ -80,8 +81,8 @@ export class CreateProductDto {
     maxItems: 5,
   })
   @IsArray()
-  @IsUrl({}, { each: true, message: 'Each image must be a valid URL' })
-  @MaxLength(5, { message: 'Maximum 5 additional images allowed' })
+  @Matches(/^https?:\/\/.+/, { each: true, message: 'Each image must be a valid URL starting with http:// or https://' })
+  @ArrayMaxSize(5, { message: 'Maximum 5 additional images allowed' })
   @IsOptional()
   additionalImages?: string[];
 
@@ -120,10 +121,10 @@ export class CreateProductDto {
     example: 'Vegetables',
     maxLength: 50,
   })
+  @IsOptional()
   @IsString()
   @Length(2, 50, { message: 'Category must be between 2 and 50 characters' })
   @Matches(/^[a-zA-Z\s]+$/, { message: 'Category can only contain letters and spaces' })
-  @IsOptional()
   category?: string;
 
   @ApiPropertyOptional({
@@ -131,16 +132,16 @@ export class CreateProductDto {
     example: 'new',
     enum: ['new', 'used', 'excellent', 'good', 'fair'],
   })
-  @IsString()
   @IsOptional()
+  @IsString()
   @Matches(/^(new|used|excellent|good|fair)$/, { message: 'Condition must be one of: new, used, excellent, good, fair' })
   condition?: string;
 
   @ApiPropertyOptional({
     description: 'Address ID for product location (required for rental products)',
   })
+  @IsOptional()
   @IsString()
   @IsMongoId({ message: 'Location must be a valid MongoDB ObjectId' })
-  @IsOptional()
   location?: string;
 }

@@ -46,4 +46,10 @@ export class AuthResponseDto {
     type: UserResponseDto,
   })
   user: UserResponseDto;
+
+  @ApiProperty({
+    description: 'Token expiration time in seconds',
+    example: 3600,
+  })
+  expiresIn: number;
 }
