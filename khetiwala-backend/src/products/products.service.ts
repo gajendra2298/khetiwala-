@@ -33,7 +33,7 @@ export class ProductsService {
     // Validate address requirement for rental products
     if (productType === ProductType.RENT || productType === ProductType.BOTH) {
       if (!location) {
-        throw new BadRequestException('Address is required for rental products');
+        throw new BadRequestException('Location (address) is required for rental products. Please provide a valid address ID.');
       }
 
       // Validate that the address belongs to the user
@@ -43,12 +43,12 @@ export class ProductsService {
       });
 
       if (!address) {
-        throw new BadRequestException('Invalid address or address does not belong to you');
+        throw new BadRequestException('Invalid address ID or the address does not belong to you. Please provide a valid address ID from your saved addresses.');
       }
 
       // Validate rental price for rental products
       if (!rentalPrice || rentalPrice <= 0) {
-        throw new BadRequestException('Rental price is required and must be greater than 0 for rental products');
+        throw new BadRequestException('Rental price is required and must be greater than 0 for rental products.');
       }
     }
 

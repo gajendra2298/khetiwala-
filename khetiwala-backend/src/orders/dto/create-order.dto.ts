@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsArray, ValidateNested, IsNumber, Min, ArrayMinSize } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateOrderItemDto } from './create-order-item.dto';
+import { ShippingAddressDto } from './shipping-address.dto';
 
 export class CreateOrderDto {
   @ApiProperty({
@@ -23,4 +24,12 @@ export class CreateOrderDto {
   @IsNumber({}, { message: 'Total price must be a number' })
   @Min(0, { message: 'Total price must be greater than or equal to 0' })
   totalPrice: number;
+
+  @ApiProperty({
+    description: 'Shipping address for the order',
+    type: ShippingAddressDto,
+  })
+  @ValidateNested()
+  @Type(() => ShippingAddressDto)
+  shippingAddress: ShippingAddressDto;
 }

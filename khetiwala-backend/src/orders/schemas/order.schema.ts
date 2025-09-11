@@ -41,6 +41,33 @@ export class Order {
     default: OrderStatus.PENDING 
   })
   status: OrderStatus;
+
+  @Prop({ unique: true, sparse: true })
+  orderNumber: string;
+
+  @Prop({ 
+    type: {
+      fullName: { type: String, required: true },
+      phoneNumber: { type: String, required: true },
+      addressLine1: { type: String, required: true },
+      addressLine2: { type: String },
+      city: { type: String, required: true },
+      state: { type: String, required: true },
+      pincode: { type: String, required: true },
+      addressType: { type: String, default: 'Home' }
+    },
+    required: true
+  })
+  shippingAddress: {
+    fullName: string;
+    phoneNumber: string;
+    addressLine1: string;
+    addressLine2?: string;
+    city: string;
+    state: string;
+    pincode: string;
+    addressType?: string;
+  };
 }
 
 export const OrderItemSchema = SchemaFactory.createForClass(OrderItem);

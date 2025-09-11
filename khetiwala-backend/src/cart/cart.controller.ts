@@ -64,23 +64,23 @@ export class CartController {
   }
 
   @Delete('items/:itemId')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Remove item from cart' })
-  @ApiResponse({ status: 204, description: 'Item removed from cart successfully' })
+  @ApiResponse({ status: 200, description: 'Item removed from cart successfully', type: CartResponseDto })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Cart item not found' })
-  async removeFromCart(@Request() req: any, @Param('itemId') itemId: string): Promise<void> {
-    await this.cartService.removeFromCart(req.user.sub, itemId);
+  async removeFromCart(@Request() req: any, @Param('itemId') itemId: string): Promise<CartResponseDto> {
+    const cart = await this.cartService.removeFromCart(req.user.sub, itemId);
+    return cart as any;
   }
 
   @Delete('clear')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Clear entire cart' })
-  @ApiResponse({ status: 204, description: 'Cart cleared successfully' })
+  @ApiResponse({ status: 200, description: 'Cart cleared successfully', type: CartResponseDto })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async clearCart(@Request() req: any): Promise<void> {
-    await this.cartService.clearCart(req.user.sub);
+  async clearCart(@Request() req: any): Promise<CartResponseDto> {
+    const cart = await this.cartService.clearCart(req.user.sub);
+    return cart as any;
   }
 }

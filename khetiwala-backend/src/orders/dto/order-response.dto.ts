@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { OrderStatus } from '../schemas/order.schema';
+import { ShippingAddressDto } from './shipping-address.dto';
 
 export class OrderItemResponseDto {
   @ApiProperty({
@@ -53,6 +54,19 @@ export class OrderResponseDto {
     example: OrderStatus.PENDING,
   })
   status: OrderStatus;
+
+  @ApiProperty({
+    description: 'Unique order number',
+    example: 'ORD-1736634195123-456',
+    required: false,
+  })
+  orderNumber?: string;
+
+  @ApiProperty({
+    description: 'Shipping address for the order',
+    type: ShippingAddressDto,
+  })
+  shippingAddress: ShippingAddressDto;
 
   @ApiProperty({
     description: 'Order creation date',

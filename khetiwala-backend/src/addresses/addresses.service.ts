@@ -40,10 +40,13 @@ export class AddressesService {
   }
 
   async findActiveAddressByUser(userId: string): Promise<Address | null> {
-    return this.addressModel.findOne({ 
+    console.log('findActiveAddressByUser: Looking for active address for user:', userId);
+    const address = await this.addressModel.findOne({ 
       userId: new Types.ObjectId(userId), 
       isActive: true 
     });
+    console.log('findActiveAddressByUser: Found address:', address);
+    return address;
   }
 
   async findAddressById(addressId: string, userId: string): Promise<Address> {

@@ -17,6 +17,7 @@ import {
   IsMongoId
 } from 'class-validator';
 import { ProductType } from '../schemas/product.schema';
+import { IsConditionallyRequired } from '../../common/decorators/conditional-required.decorator';
 
 export class CreateProductDto {
   @ApiProperty({
@@ -62,6 +63,10 @@ export class CreateProductDto {
   @IsNumber({ maxDecimalPlaces: 2 }, { message: 'Rental price must be a number with maximum 2 decimal places' })
   @Min(0.01, { message: 'Rental price must be greater than 0' })
   @Max(10000, { message: 'Rental price must not exceed 10,000 INR per day' })
+  @IsConditionallyRequired(
+    (object: CreateProductDto) => object.productType === ProductType.RENT || object.productType === ProductType.BOTH,
+    { message: 'Rental price is required for rental products' }
+  )
   @IsOptional()
   rentalPrice?: number;
 
@@ -140,8 +145,12 @@ export class CreateProductDto {
   @ApiPropertyOptional({
     description: 'Address ID for product location (required for rental products)',
   })
-  @IsOptional()
   @IsString()
   @IsMongoId({ message: 'Location must be a valid MongoDB ObjectId' })
+  @IsConditionallyRequired(
+    (object: CreateProductDto) => object.productType === ProductType.RENT || object.productType === ProductType.BOTH,
+    { message: 'Location is required for rental products' }
+  )
+  @IsOptional()
   location?: string;
 }

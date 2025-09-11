@@ -52,7 +52,9 @@ export class AddressesController {
   @ApiResponse({ status: 404, description: 'No active address found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async findActiveAddress(@Request() req: any): Promise<AddressResponseDto | null> {
+    console.log('findActiveAddress: User ID:', req.user.sub);
     const address = await this.addressesService.findActiveAddressByUser(req.user.sub);
+    console.log('findActiveAddress: Found address:', address);
     return address as any;
   }
 

@@ -31,6 +31,7 @@ async function bootstrap() {
       transformOptions: {
         enableImplicitConversion: true,
       },
+      validateCustomDecorators: true,
     }),
   );
 

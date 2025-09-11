@@ -48,6 +48,8 @@ export class OrdersController {
     @Body() createOrderDto: CreateOrderDto,
     @Request() req: any,
   ): Promise<OrderResponseDto> {
+    console.log('Received order data:', JSON.stringify(createOrderDto, null, 2));
+    console.log('Shipping address:', JSON.stringify(createOrderDto.shippingAddress, null, 2));
     return this.ordersService.createOrder(createOrderDto, req.user.sub);
   }
 
@@ -87,7 +89,10 @@ export class OrdersController {
     description: 'Unauthorized',
   })
   async findMyOrders(@Request() req: any): Promise<OrderResponseDto[]> {
-    return this.ordersService.findOrdersByUser(req.user.sub);
+    console.log('findMyOrders - User ID:', req.user.sub);
+    const orders = await this.ordersService.findOrdersByUser(req.user.sub);
+    console.log('findMyOrders - Returning orders:', orders.length);
+    return orders;
   }
 
   @Get(':id')

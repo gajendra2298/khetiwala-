@@ -90,7 +90,22 @@ export class CartService {
     }
 
     await this.calculateCartTotals(cart);
-    return (cart as CartDocument).save();
+    const savedCart = await (cart as CartDocument).save();
+    
+    // Populate the product data before returning
+    const populatedCart = await this.cartModel
+      .findById((savedCart as any)._id)
+      .populate({
+        path: 'items.product',
+        model: 'Product'
+      })
+      .exec();
+    
+    if (!populatedCart) {
+      throw new NotFoundException('Cart not found after save');
+    }
+    
+    return populatedCart;
   }
 
   async updateCartItem(userId: string, itemId: string, updateCartItemDto: UpdateCartItemDto): Promise<Cart> {
@@ -141,7 +156,22 @@ export class CartService {
     }
 
     await this.calculateCartTotals(cart);
-    return (cart as CartDocument).save();
+    const savedCart = await (cart as CartDocument).save();
+    
+    // Populate the product data before returning
+    const populatedCart = await this.cartModel
+      .findById((savedCart as any)._id)
+      .populate({
+        path: 'items.product',
+        model: 'Product'
+      })
+      .exec();
+    
+    if (!populatedCart) {
+      throw new NotFoundException('Cart not found after save');
+    }
+    
+    return populatedCart;
   }
 
   async removeFromCart(userId: string, itemId: string): Promise<Cart> {
@@ -154,24 +184,71 @@ export class CartService {
 
     cart.items.splice(itemIndex, 1);
     await this.calculateCartTotals(cart);
-    return (cart as CartDocument).save();
+    const savedCart = await (cart as CartDocument).save();
+    
+    // Populate the product data before returning
+    const populatedCart = await this.cartModel
+      .findById((savedCart as any)._id)
+      .populate({
+        path: 'items.product',
+        model: 'Product'
+      })
+      .exec();
+    
+    if (!populatedCart) {
+      throw new NotFoundException('Cart not found after save');
+    }
+    
+    return populatedCart;
   }
 
   async clearCart(userId: string): Promise<Cart> {
     const cart = await this.getOrCreateCart(userId);
     cart.items = [];
     await this.calculateCartTotals(cart);
-    return (cart as CartDocument).save();
+    const savedCart = await (cart as CartDocument).save();
+    
+    // Populate the product data before returning
+    const populatedCart = await this.cartModel
+      .findById((savedCart as any)._id)
+      .populate({
+        path: 'items.product',
+        model: 'Product'
+      })
+      .exec();
+    
+    if (!populatedCart) {
+      throw new NotFoundException('Cart not found after save');
+    }
+    
+    return populatedCart;
   }
 
   async getCart(userId: string): Promise<Cart> {
     const cart = await this.cartModel
       .findOne({ userId: new Types.ObjectId(userId) })
-      .populate('items.product')
+      .populate({
+        path: 'items.product',
+        model: 'Product'
+      })
       .exec();
 
     if (!cart) {
-      return this.getOrCreateCart(userId);
+      const newCart = await this.getOrCreateCart(userId);
+      // Populate the new cart as well
+      const populatedNewCart = await this.cartModel
+        .findById((newCart as any)._id)
+        .populate({
+          path: 'items.product',
+          model: 'Product'
+        })
+        .exec();
+      
+      if (!populatedNewCart) {
+        throw new NotFoundException('Failed to create cart');
+      }
+      
+      return populatedNewCart;
     }
 
     return cart;

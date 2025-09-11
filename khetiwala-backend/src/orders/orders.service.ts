@@ -29,14 +29,34 @@ export class OrdersService {
       });
     }
 
+    // Generate unique order number
+    const orderNumber = await this.generateOrderNumber();
+
     const order = new this.orderModel({
       user: new Types.ObjectId(userId),
       products: orderItems,
       totalPrice: createOrderDto.totalPrice,
       status: OrderStatus.PENDING,
+      orderNumber: orderNumber,
+      shippingAddress: createOrderDto.shippingAddress,
     });
 
     return order.save();
+  }
+
+  private async generateOrderNumber(): Promise<string> {
+    const timestamp = Date.now().toString();
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const orderNumber = `ORD-${timestamp}-${random}`;
+    
+    // Check if order number already exists (very unlikely but safe)
+    const existingOrder = await this.orderModel.findOne({ orderNumber });
+    if (existingOrder) {
+      // If it exists, generate a new one recursively
+      return this.generateOrderNumber();
+    }
+    
+    return orderNumber;
   }
 
   async findAllOrders(): Promise<OrderDocument[]> {
@@ -62,11 +82,15 @@ export class OrdersService {
   }
 
   async findOrdersByUser(userId: string): Promise<OrderDocument[]> {
-    return this.orderModel
+    console.log('Finding orders for user:', userId);
+    const orders = await this.orderModel
       .find({ user: new Types.ObjectId(userId) })
       .populate('user', 'name email')
       .populate('products.product', 'title price image')
       .exec();
+    console.log('Found orders count:', orders.length);
+    console.log('Orders data:', JSON.stringify(orders, null, 2));
+    return orders;
   }
 
   async updateOrderStatus(id: string, updateOrderStatusDto: UpdateOrderStatusDto, userId: string): Promise<OrderDocument> {
