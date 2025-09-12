@@ -114,4 +114,35 @@ export class ChatController {
   async getConversations(@Request() req: any) {
     return this.chatService.getConversations(req.user.sub) as any;
   }
+
+  @Get('conversations/orders')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get order-related conversations (buyer-seller chats)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Order-related conversations retrieved successfully',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          userId: { type: 'string' },
+          userName: { type: 'string' },
+          lastMessage: { type: 'string' },
+          lastMessageTime: { type: 'string' },
+          unreadCount: { type: 'number' },
+          relatedProduct: { type: 'string' },
+          product: { type: 'object' },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  async getOrderRelatedConversations(@Request() req: any) {
+    return this.chatService.getOrderRelatedConversations(req.user.sub) as any;
+  }
 }

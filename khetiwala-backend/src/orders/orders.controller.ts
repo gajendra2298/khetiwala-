@@ -95,6 +95,26 @@ export class OrdersController {
     return orders;
   }
 
+  @Get('seller-orders')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get orders for current user as seller' })
+  @ApiResponse({
+    status: 200,
+    description: 'Seller orders retrieved successfully',
+    type: [OrderResponseDto],
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  async findSellerOrders(@Request() req: any): Promise<OrderResponseDto[]> {
+    console.log('findSellerOrders - Seller ID:', req.user.sub);
+    const orders = await this.ordersService.findOrdersBySeller(req.user.sub);
+    console.log('findSellerOrders - Returning orders:', orders.length);
+    return orders;
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
@@ -125,10 +145,9 @@ export class OrdersController {
   }
 
   @Patch(':id/status')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SUPPORT)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Update order status (Admin/Support only)' })
+  @ApiOperation({ summary: 'Update order status (Order owner or seller)' })
   @ApiParam({ name: 'id', description: 'Order ID' })
   @ApiResponse({
     status: 200,
@@ -145,7 +164,7 @@ export class OrdersController {
   })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden - Admin/Support access required',
+    description: 'Forbidden - Order owner or seller access required',
   })
   @ApiResponse({
     status: 404,

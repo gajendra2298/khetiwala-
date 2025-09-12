@@ -17,6 +17,9 @@ export class OrderItem {
   @Prop({ type: Types.ObjectId, ref: 'Product', required: true })
   product: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  seller: Types.ObjectId;
+
   @Prop({ required: true, min: 1 })
   quantity: number;
 

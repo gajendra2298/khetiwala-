@@ -160,6 +160,7 @@ export class ChatService {
           lastMessageTime: { $first: '$createdAt' },
           lastMessageType: { $first: '$messageType' },
           chatType: { $first: '$chatType' },
+          relatedProduct: { $first: '$relatedProduct' },
           unreadCount: {
             $sum: {
               $cond: [
@@ -188,6 +189,14 @@ export class ChatService {
         $unwind: '$user',
       },
       {
+        $lookup: {
+          from: 'products',
+          localField: 'relatedProduct',
+          foreignField: '_id',
+          as: 'product',
+        },
+      },
+      {
         $project: {
           userId: '$_id',
           userName: '$user.name',
@@ -196,6 +205,94 @@ export class ChatService {
           lastMessageTime: 1,
           lastMessageType: 1,
           chatType: 1,
+          relatedProduct: 1,
+          product: { $arrayElemAt: ['$product', 0] },
+          unreadCount: 1,
+        },
+      },
+    ]);
+
+    return conversations;
+  }
+
+  /**
+   * Get conversations related to orders (buyer-seller chats)
+   */
+  async getOrderRelatedConversations(userId: string): Promise<any[]> {
+    const conversations = await this.messageModel.aggregate([
+      {
+        $match: {
+          $or: [
+            { sender: new Types.ObjectId(userId) },
+            { receiver: new Types.ObjectId(userId) },
+          ],
+          isDeleted: false,
+          relatedProduct: { $exists: true, $ne: null },
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ['$sender', new Types.ObjectId(userId)] },
+              '$receiver',
+              '$sender',
+            ],
+          },
+          lastMessage: { $first: '$text' },
+          lastMessageTime: { $first: '$createdAt' },
+          lastMessageType: { $first: '$messageType' },
+          chatType: { $first: '$chatType' },
+          relatedProduct: { $first: '$relatedProduct' },
+          unreadCount: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: ['$receiver', new Types.ObjectId(userId)] },
+                    { $ne: ['$isRead', true] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'relatedProduct',
+          foreignField: '_id',
+          as: 'product',
+        },
+      },
+      {
+        $project: {
+          userId: '$_id',
+          userName: '$user.name',
+          userEmail: '$user.email',
+          lastMessage: 1,
+          lastMessageTime: 1,
+          lastMessageType: 1,
+          chatType: 1,
+          relatedProduct: 1,
+          product: { $arrayElemAt: ['$product', 0] },
           unreadCount: 1,
         },
       },
