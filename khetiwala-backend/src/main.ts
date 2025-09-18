@@ -46,9 +46,20 @@ async function bootstrap() {
 
   // CORS configuration
   app.enableCors({
-    origin: configService.get<string>('cors.origin') || true,
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:19006',
+      'http://192.168.1.9:3000',
+      'http://192.168.1.9:19006',
+      'http://192.168.1.3:3000',
+      'http://192.168.1.3:19006',
+      /^http:\/\/192\.168\.\d+\.\d+:\d+$/, // Allow any local network IP
+      /^http:\/\/10\.\d+\.\d+\.\d+:\d+$/, // Allow 10.x.x.x network
+      /^http:\/\/172\.\d+\.\d+\.\d+:\d+$/, // Allow 172.x.x.x network
+    ],
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
   });
 
   // Swagger configuration
@@ -86,9 +97,11 @@ async function bootstrap() {
   });
 
   const port = configService.get<number>('port') || 5000;
-  await app.listen(port);
+  const host = '0.0.0.0'; // Listen on all network interfaces
+  await app.listen(port, host);
   
-  logger.log(`🚀 Khetiwala Backend is running on: http://localhost:${port}`);
-  logger.log(`📚 API Documentation available at: http://localhost:${port}/docs`);
+  logger.log(`🚀 Khetiwala Backend is running on: http://${host}:${port}`);
+  logger.log(`📚 API Documentation available at: http://${host}:${port}/docs`);
+  logger.log(`🌐 Mobile access: http://192.168.1.9:${port}`);
 }
 bootstrap();
