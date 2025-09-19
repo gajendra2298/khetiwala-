@@ -23,7 +23,7 @@ Update your `src/config/api.ts` file to point to your hosted backend:
 export const API_CONFIG = {
   // Base URL for the API
   BASE_URL: __DEV__ 
-    ? 'http://192.168.1.9:5000/api' // Development (local backend)
+    ? 'http://72.60.99.223:5000/api' // Development (local backend)
     : 'https://yourdomain.com/api', // Production (hosted backend)
   
   // API Endpoints

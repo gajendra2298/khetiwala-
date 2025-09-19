@@ -94,7 +94,7 @@ A comprehensive NestJS-based backend API for agricultural marketplace management
 ## 📚 API Documentation
 
 Once the server is running, you can access the Swagger documentation at:
-- **Local**: http://localhost:5000/api/docs
+- **Local**: http://72.60.99.223:5000/api/docs
 
 ## 🔐 Authentication
 

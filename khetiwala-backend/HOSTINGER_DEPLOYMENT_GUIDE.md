@@ -226,7 +226,7 @@ server {
 
     # API routes
     location /api {
-        proxy_pass http://localhost:5000;
+        proxy_pass http://72.60.99.223:5000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -240,7 +240,7 @@ server {
 
     # WebSocket support
     location /socket.io/ {
-        proxy_pass http://localhost:5000;
+        proxy_pass http://72.60.99.223:5000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -259,7 +259,7 @@ server {
 
     # API Documentation
     location /docs {
-        proxy_pass http://localhost:5000;
+        proxy_pass http://72.60.99.223:5000;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -269,7 +269,7 @@ server {
 
     # Health check
     location /health {
-        proxy_pass http://localhost:5000;
+        proxy_pass http://72.60.99.223:5000;
         access_log off;
     }
 }

@@ -1,10 +1,10 @@
 ### Test Khetiwala Backend API
 
 ### 1. Health Check
-GET http://localhost:5000
+GET http://72.60.99.223:5000
 
 ### 2. User Signup
-POST http://localhost:5000/auth/signup
+POST http://72.60.99.223:5000/auth/signup
 Content-Type: application/json
 
 {
@@ -15,7 +15,7 @@ Content-Type: application/json
 }
 
 ### 3. User Login
-POST http://localhost:5000/auth/login
+POST http://72.60.99.223:5000/auth/login
 Content-Type: application/json
 
 {
@@ -24,11 +24,11 @@ Content-Type: application/json
 }
 
 ### 4. Get User Profile (Replace TOKEN with actual JWT token)
-GET http://localhost:5000/users/profile
+GET http://72.60.99.223:5000/users/profile
 Authorization: Bearer TOKEN
 
 ### 5. Create Product (Replace TOKEN with actual JWT token)
-POST http://localhost:5000/products
+POST http://72.60.99.223:5000/products
 Authorization: Bearer TOKEN
 Content-Type: application/json
 
@@ -40,10 +40,10 @@ Content-Type: application/json
 }
 
 ### 6. Get All Products
-GET http://localhost:5000/products
+GET http://72.60.99.223:5000/products
 
 ### 7. Create Order (Replace TOKEN with actual JWT token)
-POST http://localhost:5000/orders
+POST http://72.60.99.223:5000/orders
 Authorization: Bearer TOKEN
 Content-Type: application/json
 
@@ -57,5 +57,5 @@ Content-Type: application/json
 }
 
 ### 8. Get My Orders (Replace TOKEN with actual JWT token)
-GET http://localhost:5000/orders/my-orders
+GET http://72.60.99.223:5000/orders/my-orders
 Authorization: Bearer TOKEN

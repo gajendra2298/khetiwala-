@@ -46,7 +46,7 @@ export class UploadService {
       fs.writeFileSync(filePath, file.buffer);
 
       // Generate public URL
-      const baseUrl = this.configService.get<string>('app.baseUrl') || 'http://192.168.1.9:5000';
+      const baseUrl = this.configService.get<string>('app.baseUrl') || 'http://72.60.99.223:5000';
       const publicUrl = `${baseUrl}/uploads/images/${uniqueFilename}`;
 
       // Save file info to database

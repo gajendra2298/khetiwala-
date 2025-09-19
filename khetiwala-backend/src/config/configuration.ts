@@ -1,7 +1,7 @@
 export default () => ({
   port: parseInt(process.env.PORT || '5000', 10),
   app: {
-    baseUrl: process.env.APP_BASE_URL || 'http://192.168.1.9:5000',
+    baseUrl: process.env.APP_BASE_URL || 'http://72.60.99.223:5000',
   },
   database: {
     uri: process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/khetiwala',
